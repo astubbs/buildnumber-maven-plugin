@@ -62,6 +62,23 @@
     <maven.api.version>2.0.6</maven.api.version>
   </properties>
 
+	<contributors>
+		<contributor>
+			<name>Nigel Magnay</name>
+			<email>nigel.magnay@gmail.com</email>
+			<roles>
+				<role>GIT-Patch</role>
+			</roles>
+		</contributor>
+		<contributor>
+			<name>Markus Heberling</name>
+			<email>markus@tisoft.de</email>
+			<roles>
+				<role>GIT-Patch</role>
+			</roles>
+		</contributor>
+	</contributors>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -145,6 +162,11 @@
       </exclusions>          
     </dependency>    
     <dependency>
+      <groupId>org.apache.maven.scm</groupId>
+      <artifactId>maven-scm-provider-gitexe</artifactId>
+      <version>${maven.scm.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId> 
       <version>1.5.6</version>
@@ -216,6 +238,12 @@
     </pluginManagement>
     
     <plugins>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <classifier>git</classifier>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-changes-plugin</artifactId>

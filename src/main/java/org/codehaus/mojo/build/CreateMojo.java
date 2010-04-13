@@ -39,10 +39,14 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.scm.CommandParameter;
+import org.apache.maven.scm.CommandParameters;
 import org.apache.maven.scm.ScmException;
 import org.apache.maven.scm.ScmFile;
 import org.apache.maven.scm.ScmFileSet;
 import org.apache.maven.scm.ScmResult;
+import org.apache.maven.scm.ScmRevision;
+import org.apache.maven.scm.command.changelog.ChangeLogScmResult;
 import org.apache.maven.scm.command.status.StatusScmResult;
 import org.apache.maven.scm.command.update.UpdateScmResult;
 import org.apache.maven.scm.command.update.UpdateScmResultWithRevision;
@@ -51,9 +55,12 @@ import org.apache.maven.scm.log.ScmLogger;
 import org.apache.maven.scm.manager.ScmManager;
 import org.apache.maven.scm.provider.ScmProvider;
 import org.apache.maven.scm.provider.ScmProviderRepository;
+import org.apache.maven.scm.provider.git.AbstractGitScmProvider;
+import org.apache.maven.scm.provider.git.repository.GitScmProviderRepository;
 import org.apache.maven.scm.provider.svn.AbstractSvnScmProvider;
 import org.apache.maven.scm.provider.svn.command.info.SvnInfoItem;
 import org.apache.maven.scm.provider.svn.command.info.SvnInfoScmResult;
+import org.apache.maven.scm.provider.svn.repository.SvnScmProviderRepository;
 import org.apache.maven.scm.repository.ScmRepository;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -602,15 +609,21 @@ public class CreateMojo
         try
         {
             ScmRepository repository = getScmRepository();
-            SvnInfoScmResult scmResult = info( repository, new ScmFileSet( scmDirectory ) );
-            if ( ! scmResult.isSuccess() )
-            {
-                getLog().debug( "Cannot get the branch information from the scm repository : " +
-                                scmResult.getCommandOutput() );
-                return DEFAULT_BRANCH_NAME;
-            }
-            SvnInfoItem info = (SvnInfoItem) scmResult.getInfoItems().get( 0 );
-            scmUrl = info.getURL();
+	            
+	        if (repository.getProviderRepository() instanceof SvnScmProviderRepository) {
+	            SvnInfoScmResult scmResult = info( repository, new ScmFileSet( scmDirectory ) );
+	            if ( ! scmResult.isSuccess() )
+	            {
+	                getLog().debug( "Cannot get the branch information from the scm repository : " +
+	                                scmResult.getCommandOutput() );
+	                return DEFAULT_BRANCH_NAME;
+	            }
+	            SvnInfoItem info = (SvnInfoItem) scmResult.getInfoItems().get( 0 );
+	            scmUrl = info.getURL();
+            } else if (repository.getProviderRepository() instanceof GitScmProviderRepository) {
+            	//currently not supported
+            	scmUrl="UNKNOWN";
+			} else throw new ScmException("No implementation for "+repository.getProvider());
         }
         catch ( ScmException e )
         {
@@ -654,18 +667,31 @@ public class CreateMojo
         {
             ScmRepository repository = getScmRepository();
 
-            SvnInfoScmResult scmResult = info( repository, new ScmFileSet( scmDirectory ) );
-
-            checkResult( scmResult );
-
-            SvnInfoItem info = (SvnInfoItem) scmResult.getInfoItems().get( 0 );
-            
-            if ( useLastCommittedRevision )
-            {
-                return info.getLastChangedRevision();
-            }
-            
-            return info.getRevision();
+	        if (repository.getProviderRepository() instanceof SvnScmProviderRepository) {
+	            SvnInfoScmResult scmResult = info( repository, new ScmFileSet( scmDirectory ) );
+	
+	            checkResult( scmResult );
+	
+	            SvnInfoItem info = (SvnInfoItem) scmResult.getInfoItems().get( 0 );
+	            
+	            if ( useLastCommittedRevision )
+	            {
+	                return info.getLastChangedRevision();
+	            }
+	            
+	            return info.getRevision();
+            } else if (repository.getProviderRepository() instanceof GitScmProviderRepository) {
+				
+             	GitRevParseCommand command=new GitRevParseCommand();
+            	
+            	command.setLogger(getLogger());
+            	command.setRev("HEAD");
+            	
+            	return command.execute(repository.getProviderRepository(), 
+            			new ScmFileSet( scmDirectory ), 
+            			new CommandParameters()).getCommandOutput().substring(0, 7);
+            	
+ 			} else throw new ScmException("No implementation for "+repository.getProvider());
         }
         catch ( ScmException e )
         {
