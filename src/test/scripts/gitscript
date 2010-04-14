@@ -1,0 +1,33 @@
+#!/bin/bash
+set -x
+
+cd target
+mkdir test-repos
+cd test-repos
+mkdir git
+cd git
+mkdir spanish
+cd spanish
+git init
+echo Hi there, my name is Earl. > greetings.mdown
+git add greetings.mdown
+git commit -a -m "Initial"
+echo Yo, what is up? >> greetings.mdown
+git commit -a -m "An alternative"
+git checkout -b spanish
+echo Yo, lo que está arriba? >> greetings.mdown
+echo Hola, mi nombre es Earl. >> greetings.mdown
+git commit -a -m "Spanish translation"
+git checkout -b Japanese
+echo こんにちは、私の名前はアールです。 >> greetings.mdown
+git commit -a -m "Japanese looks so nice"
+git checkout spanish
+cd ..
+cp -R spanish japanese
+cd japanese
+git checkout Japanese
+cd ..
+cp -R spanish no-branch
+cd no-branch
+git tag temp
+git checkout temp

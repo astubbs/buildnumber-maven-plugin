@@ -21,12 +21,20 @@ package org.codehaus.mojo.build;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.scm.manager.ScmManager;
+import org.apache.maven.scm.manager.plexus.DefaultScmManager;
+import org.apache.maven.scm.provider.git.gitexe.GitExeScmProvider;
+import org.apache.maven.scm.provider.git.repository.GitScmProviderRepository;
 import org.codehaus.plexus.PlexusTestCase;
 
 public class TestCreateMojo
@@ -136,4 +144,65 @@ public class TestCreateMojo
     	String scmUrlTag = "https://mifos.dev.java.net/svn/mifos/tags/v1.2.1";
     	assertEquals("tags/v1.2.1", mojo.filterBranchFromScmUrl(scmUrlTag));
     }
+
+  /**
+   * The base dir of all the test repositories.
+   */
+  String gitBaseDir = "target/test-repos/git/";
+
+  /**
+   * Tests the case where the current branch is displayed first in the list of
+   * the "git branch" output.
+   */
+  public void testGetGitBranchFirstBranchInList() {
+    String branchExpectedToFind = "Japanese";
+    String repositoryLocationToUse = gitBaseDir + "japanese";
+    genericTestGitBranchDetection(branchExpectedToFind, repositoryLocationToUse);
+  }
+
+  /**
+   * Tests the case where the current branch is not the first displayed in the
+   * "git branch" output.
+   */
+  public void testGetGitBranchNotFirstBranchInList() {
+    String repositoryLocationToUse = gitBaseDir + "spanish";
+    String branchExpectedToFind = "spanish";
+    genericTestGitBranchDetection(branchExpectedToFind, repositoryLocationToUse);
+  }
+
+  /**
+   * Tests the case where the repository is in a detached HEAD state (no
+   * branch).
+   */
+  public void testGetGitBranchNoBranch() {
+    String repositoryLocationToUse = gitBaseDir + "no-branch";
+    String branchExpectedToFind = "no-branch";
+    genericTestGitBranchDetection(branchExpectedToFind, repositoryLocationToUse);
+  }
+
+  /**
+   * Common helper method for testing Git branch detection.
+   * 
+   * @param branchExpectedToFind
+   * @param repositoryLocationToUse
+   */
+  private void genericTestGitBranchDetection(String branchExpectedToFind,
+      String repositoryLocationToUse) {
+    CreateMojo mojo = new CreateMojo();
+    String urlScm = "scm:git:file://" + repositoryLocationToUse;
+    mojo.setUrlScm(urlScm);
+    mojo.setScmDirectory(new File(repositoryLocationToUse));
+    ScmManager scmManager = new DefaultScmManager();
+    scmManager.setScmProvider("git", new GitExeScmProvider());
+
+    mojo.setScmManager(scmManager);
+    try {
+      String scmBranch = mojo.getScmBranch();
+      assertEquals(branchExpectedToFind, scmBranch);
+    } catch (MojoExecutionException e) {
+      fail(e.getMessage());
+      e.printStackTrace();
+    }
+  }
+
 }

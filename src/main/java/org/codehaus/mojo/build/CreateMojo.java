@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -62,6 +63,7 @@ import org.apache.maven.scm.provider.svn.command.info.SvnInfoItem;
 import org.apache.maven.scm.provider.svn.command.info.SvnInfoScmResult;
 import org.apache.maven.scm.provider.svn.repository.SvnScmProviderRepository;
 import org.apache.maven.scm.repository.ScmRepository;
+import org.codehaus.mojo.build.git.GitBranchParseCommand;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
@@ -97,7 +99,7 @@ public class CreateMojo
      * @since 1.0-beta-5
      * @readonly
      */
-    private String readUrlScm;    
+    private String readUrlScm;
 
     /**
      * The username that is used when connecting to the SCM system.
@@ -608,7 +610,7 @@ public class CreateMojo
         String scmUrl;
         try
         {
-            ScmRepository repository = getScmRepository();
+          ScmRepository repository = getScmRepository();
 	            
 	        if (repository.getProviderRepository() instanceof SvnScmProviderRepository) {
 	            SvnInfoScmResult scmResult = info( repository, new ScmFileSet( scmDirectory ) );
@@ -621,8 +623,35 @@ public class CreateMojo
 	            SvnInfoItem info = (SvnInfoItem) scmResult.getInfoItems().get( 0 );
 	            scmUrl = info.getURL();
             } else if (repository.getProviderRepository() instanceof GitScmProviderRepository) {
-            	//currently not supported
-            	scmUrl="UNKNOWN";
+              GitBranchParseCommand command = new GitBranchParseCommand();
+
+              command.setLogger(getLogger());
+
+              ScmResult execute = command.execute(repository.getProviderRepository(), 
+                  new ScmFileSet( scmDirectory ), 
+                  new CommandParameters());
+              String output = execute.getCommandOutput();
+              getLog().debug("Output: " + output);
+              String[] split = StringUtils.split(output);
+              getLog().debug("Split output: " + Arrays.toString(split));
+              if(split.length<2){
+                  getLog().error( "Cannot get the branch information from the scm repository : " +
+                    output );
+                  return DEFAULT_BRANCH_NAME;
+              } else {
+                List asList = Arrays.asList(split);
+                int indicatorIndex = asList.indexOf("*");
+                int branchNameIndex = indicatorIndex + 1;
+                String currentBranchName = split[branchNameIndex];
+                getLog().debug("Branch detected is: " + currentBranchName);
+                if (currentBranchName.equals("(no") && split[branchNameIndex+1].equals("branch)")) {
+                  getLog().warn("Detected detached HEAD state - no branch (using 'no-branch').");
+                  currentBranchName = "no-branch";
+                }
+                currentBranchName = currentBranchName.trim();
+                getLog().debug("Branch detected is: " + currentBranchName);
+                return currentBranchName;
+              }
 			} else throw new ScmException("No implementation for "+repository.getProvider());
         }
         catch ( ScmException e )
