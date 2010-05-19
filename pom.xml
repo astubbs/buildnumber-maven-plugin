@@ -62,22 +62,29 @@
     <maven.api.version>2.0.6</maven.api.version>
   </properties>
 
-	<contributors>
-		<contributor>
-			<name>Nigel Magnay</name>
-			<email>nigel.magnay@gmail.com</email>
-			<roles>
-				<role>GIT-Patch</role>
-			</roles>
-		</contributor>
-		<contributor>
-			<name>Markus Heberling</name>
-			<email>markus@tisoft.de</email>
-			<roles>
-				<role>GIT-Patch</role>
-			</roles>
-		</contributor>
-	</contributors>
+  <contributors>
+    <contributor>
+      <name>Nigel Magnay</name>
+      <email>nigel.magnay@gmail.com</email>
+      <roles>
+	<role>GIT-Patch</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Markus Heberling</name>
+      <email>markus@tisoft.de</email>
+      <roles>
+	<role>GIT-Patch</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Espen Wiborg</name>
+      <email>http://mailhide.recaptcha.net/d?k=01GFbnCG21M-KIunkjRjxWJw==&amp;c=BsOjYVXpToqQKNHwMd0ZRx5XPNMia6agfhzc3Fwtink=</email>
+      <roles>
+        <role>GIT-Patch</role>
+      </roles>
+    </contributor>
+  </contributors>
 
   <dependencies>
     <dependency>
@@ -255,29 +262,29 @@
         <version>1.5</version>
       </plugin>
       <plugin>
-			<groupId>org.codehaus.groovy.maven</groupId>
-			<artifactId>gmaven-plugin</artifactId>
-			<executions>
-				<execution>
-					<phase>generate-resources</phase>
-					<goals>
-						<goal>execute</goal>
-					</goals>
-					<configuration>
-						<source>
-							def command = """src/test/scripts/gitscript"""// Create the String
-							def proc = command.execute()                 // Call *execute* on the string
-							proc.waitFor()                               // Wait for the command to finish
-							
-							// Obtain status and output
-							println "return code: ${ proc.exitValue()}"
-							println "stderr: ${proc.err.text}"
-							println "stdout: ${proc.in.text}"
-						</source>
-					</configuration>
-				</execution>
-			</executions>
-		</plugin>
+	<groupId>org.codehaus.groovy.maven</groupId>
+	<artifactId>gmaven-plugin</artifactId>
+	<executions>
+	  <execution>
+	    <phase>generate-resources</phase>
+	    <goals>
+	      <goal>execute</goal>
+	    </goals>
+	    <configuration>
+	      <source>
+		def command = """src/test/scripts/gitscript"""// Create the String
+		def proc = command.execute()                 // Call *execute* on the string
+		proc.waitFor()                               // Wait for the command to finish
+		
+		// Obtain status and output
+		println "return code: ${ proc.exitValue()}"
+		println "stderr: ${proc.err.text}"
+		println "stdout: ${proc.in.text}"
+	      </source>
+	    </configuration>
+	  </execution>
+	</executions>
+      </plugin>
     </plugins>
   </build>
   
