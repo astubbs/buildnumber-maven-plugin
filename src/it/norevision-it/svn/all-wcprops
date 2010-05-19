@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/mojo/!svn/ver/9419/trunk/mojo/buildnumber-maven-plugin/src/it/norevision-it
+END
+verify.bsh
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/mojo/!svn/ver/9419/trunk/mojo/buildnumber-maven-plugin/src/it/norevision-it/verify.bsh
+END
+goals.txt
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/mojo/!svn/ver/9038/trunk/mojo/buildnumber-maven-plugin/src/it/norevision-it/goals.txt
+END
+pom.xml
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/mojo/!svn/ver/9419/trunk/mojo/buildnumber-maven-plugin/src/it/norevision-it/pom.xml
+END
