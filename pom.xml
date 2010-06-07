@@ -84,6 +84,13 @@
         <role>GIT-Patch</role>
       </roles>
     </contributor>
+    <contributor>
+      <name>Antony Stubbs</name>
+      <email>antony.stubbs@gmail.com</email>
+      <roles>
+        <role>GIT-Patch</role>
+      </roles>
+    </contributor>
   </contributors>
 
   <dependencies>
