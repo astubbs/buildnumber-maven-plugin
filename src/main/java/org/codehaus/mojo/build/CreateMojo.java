@@ -42,6 +42,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.scm.CommandParameter;
 import org.apache.maven.scm.CommandParameters;
+import org.apache.maven.scm.ScmBranch;
 import org.apache.maven.scm.ScmException;
 import org.apache.maven.scm.ScmFile;
 import org.apache.maven.scm.ScmFileSet;
@@ -561,8 +562,16 @@ public class CreateMojo
 
             ScmProvider scmProvider = scmManager.getProviderByRepository( repository );
 
-            UpdateScmResult result = scmProvider.update( repository, new ScmFileSet( scmDirectory ) );
-
+            String branch = getScmBranch();
+            UpdateScmResult result;
+            if (!branch.equals(DEFAULT_BRANCH_NAME)) {
+              getLog().debug("Updating from branch: " + branch);
+              result = scmProvider.update( repository, new ScmFileSet( scmDirectory ), new ScmBranch( branch ) );
+            } else {
+              getLog().debug("Updating from provider's chosen tag/branch/revision");
+              result = scmProvider.update( repository, new ScmFileSet( scmDirectory ) );
+            }
+            
             checkResult( result );
 
             if ( scmProvider instanceof AbstractSvnScmProvider )
